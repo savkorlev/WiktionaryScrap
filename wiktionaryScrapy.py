@@ -1,12 +1,12 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
+import string
 
 inputWord = 'God'
 
-englishAlphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 definitions = {}
 
-if inputWord[0] in englishAlphabet:
+if inputWord[0] in string.ascii_letters:
     language = 'English'
 else:
     language = 'Russian'
