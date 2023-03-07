@@ -34,13 +34,13 @@ class MySpider(scrapy.Spider):
             # elif currentTagName in ['h3', 'h4']:
             elif currentTag.xpath(f'./span[@class="mw-headline"]/text()').get() in speechParts:
 
-                speechPartDefinitions = []
                 speechPart = currentTag.xpath(f'./span[@class="mw-headline"]/text()').get()
+                if speechPart not in definitions:
+                    definitions[speechPart] = []
 
                 ols = currentTag.xpath('./following-sibling::ol[1]/li')
                 for ol in ols:
-                    speechPartDefinitions.append(''.join(ol.xpath('.//text()').getall()))
-                definitions[speechPart] = speechPartDefinitions
+                    definitions[speechPart].append(''.join(ol.xpath('.//text()').getall()))
 
 process = CrawlerProcess()
 process.crawl(MySpider)
