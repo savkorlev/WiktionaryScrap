@@ -1,10 +1,9 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 
-inputWord = 'home'
-inputWord = inputWord.lower()
+inputWord = 'God'
 
-englishAlphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+englishAlphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 definitions = {}
 
 if inputWord[0] in englishAlphabet:
