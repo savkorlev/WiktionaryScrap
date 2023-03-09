@@ -11,7 +11,7 @@ def generateOutput(inputWord: str):
     speechParts = [
         'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective', 
         'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition', 
-        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause'
+        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun'
         ]
 
     if inputWord[0] in string.ascii_letters:
@@ -41,10 +41,21 @@ def generateOutput(inputWord: str):
                 output += underSpeechPart
 
             ols = currentTag.xpath('./following-sibling::ol[1]/li')
+
+            # extract the text from the tag and all its children
+            for j, ol in enumerate(ols):
+                ols[j] = ol.text_content().split('\n')[0].strip()
+
+            # remove empty entries
+            ols = list(filter(None, ols))
+
             for j, ol in enumerate(ols):
                 if j < 5:
-                    output = output + str(j + 1) + ') ' + ol.text_content().split('\n')[0] + '\n'
+                    output = f'{output}{j + 1}) {ol}\n'
             output += '\n'
+
+    if output.replace('\n', '') == inputWord:
+        output = 'Word or phrase not found'
 
     return output
 
