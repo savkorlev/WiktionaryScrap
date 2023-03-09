@@ -11,7 +11,8 @@ def generateOutput(inputWord: str):
     speechParts = [
         'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective', 
         'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition', 
-        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun'
+        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun',
+        'Participle'
         ]
 
     if inputWord[0] in string.ascii_letters:
