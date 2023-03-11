@@ -49,7 +49,7 @@ def generateOutput(inputWord: str):
                 # usage example if exists
                 if len(li.xpath('./dl/dd')) > 0:
                     for usage in li.xpath('./dl/dd'):
-                        if usage.text_content().split()[0] not in ['Synonym:', 'Synonyms:']:
+                        if usage.text_content().split()[0] not in ['Synonym:', 'Synonyms:', 'Antonym:', 'Antonyms:']:
                             lis[j] = lis[j] + '\n' + usage.text_content()
 
             # remove empty entries
