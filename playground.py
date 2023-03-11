@@ -1,12 +1,14 @@
 from lxml import html
 import requests
 import string
+import math
+import copy
 
 def generateOutput(inputWord: str):
 
     definitions = {}
 
-    output = inputWord + '\n\n\n'
+    output = inputWord + '\n\n'
 
     speechParts = [
         'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective', 
@@ -35,11 +37,11 @@ def generateOutput(inputWord: str):
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
             if speechPart not in definitions:
-                output += speechPart + '\n\n'
+                output += speechPart + '\n'
 
             if currentTag.xpath('following-sibling::*[1]')[0].tag == 'p':  # class="Latn headword", lang="en"
                 underSpeechPart = currentTag.xpath('following-sibling::*[1]')[0].text_content()
-                output = f'{output}{underSpeechPart}\n'
+                output += underSpeechPart
 
             lis = currentTag.xpath('./following-sibling::ol[1]/li')
 
@@ -49,14 +51,42 @@ def generateOutput(inputWord: str):
                 # usage example if exists
                 if len(li.xpath('.//*[@class = "h-usage-example"]')) > 0:
                     for usageI in range(len(li.xpath('.//*[@class = "h-usage-example"]'))):
-                        lis[j] = lis[j] + '\n' + li.xpath('.//*[@class = "h-usage-example"]')[usageI].text_content()
+
+                        usageExample = li.xpath('.//*[@class = "h-usage-example"]')[usageI].text_content()
+                        tempSUE = usageExample.split()
+                        separatedUsageExample = copy.deepcopy(tempSUE)
+
+                        maxLength = 70
+                        splitNrs = math.floor(len(usageExample) / maxLength)
+                        currentLength = len(tempSUE) - 2
+
+                        if splitNrs > 0:
+                            currentSplit = 1
+                            for k, element in enumerate(tempSUE):
+                                currentLength += len(element)
+                                if currentLength > currentSplit * maxLength:
+                                    currentSplit += 1
+                                    separatedUsageExample[k-1] = separatedUsageExample[k-1] + '\n\t'
+                            lis[j] = lis[j] + '\n\t' + ' '.join(separatedUsageExample)
+
+                        else:
+                            lis[j] = lis[j] + '\n\t' + usageExample
+
+                            # for splitNr in range(splitNrs + 1):
+                            #     separatedUsageExample = separatedUsageExample + usageExample[(splitNr)*maxLength:(splitNr+1)*maxLength].strip()
+                            #     if splitNr < splitNrs:
+                            #         separatedUsageExample = separatedUsageExample + '\n\t'
+                        # if len(separatedUsageExample) > 0:
+                        #     lis[j] = lis[j] + '\n\t' + separatedUsageExample
+                        # else:
+                        #     lis[j] = lis[j] + '\n\t' + usageExample
 
             # remove empty entries
             lis = list(filter(None, lis))
 
             for j, li in enumerate(lis):
                 if j < 5:
-                    output = f'{output}{j + 1}) {li}\n\n'
+                    output = f'{output}{j + 1}) {li}\n'
             output += '\n'
 
     if output.replace('\n', '') == inputWord:
@@ -64,4 +94,4 @@ def generateOutput(inputWord: str):
 
     return output
 
-print(generateOutput('god'))
+print(generateOutput('God'))
