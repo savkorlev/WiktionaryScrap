@@ -1,6 +1,7 @@
 from lxml import html
 import requests
 import string
+import re
 
 def generateOutput(inputWord: str):
 
@@ -48,16 +49,21 @@ def generateOutput(inputWord: str):
                 lis[j] = li.text_content().split('\n')[0].strip()
                 # usage example if exists
                 if len(li.xpath('./dl/dd')) > 0:
-                    for usage in li.xpath('./dl/dd'):
-                        if usage.text_content().split()[0] not in ['Synonym:', 'Synonyms:', 'Antonym:', 'Antonyms:']:
-                            lis[j] = lis[j] + '\n' + usage.text_content()
+                    for usageRaw in li.xpath('./dl/dd'):
+                        if usageRaw.text_content().split()[0] not in ['Synonym:', 'Synonyms:', 'Antonym:', 'Antonyms:']:
+                            usage = usageRaw.text_content()
+                            # if re.search(r'\.[^\s\d]\w*', usage):
+                            #     usage = re.sub(r'\.[^\s\d]\w*', '. ― ', usage)
+                            # if usage.count('―') > 2:
+                            #     usage = usage[:-2]  # potential bugs
+                            lis[j] = lis[j] + '\n' + f'*{usage}*'
 
             # remove empty entries
             lis = list(filter(None, lis))
 
             for j, li in enumerate(lis):
                 if j < 5:
-                    output = f'{output}{j + 1}) {li}\n\n'
+                    output = f'{output}{j + 1}) {li}\n'
             output = f'{output}\n'
 
     if output.replace('\n', '') == inputWord:
