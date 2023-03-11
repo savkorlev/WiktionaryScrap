@@ -5,8 +5,6 @@ import re
 
 def generateOutput(inputWord: str):
 
-    definitions = {}
-
     output = ''
 
     speechParts = [
@@ -35,8 +33,7 @@ def generateOutput(inputWord: str):
         elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text in speechParts:
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
-            if speechPart not in definitions:
-                output = f'{output}{speechPart}\n\n'
+            output = f'{output}**{speechPart}**\n\n'
 
             if currentTag.xpath('following-sibling::*[1]')[0].tag == 'p':  # class="Latn headword", lang="en"
                 underSpeechPart = currentTag.xpath('following-sibling::*[1]')[0].text_content()
@@ -64,7 +61,6 @@ def generateOutput(inputWord: str):
             for j, li in enumerate(lis):
                 if j < 5:
                     output = f'{output}{j + 1}) {li}\n\n'
-            output = f'{output}\n'
 
     if output.replace('\n', '') == inputWord:
         output = 'Word or phrase not found'
