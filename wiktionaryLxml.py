@@ -6,12 +6,13 @@ def generateOutput(inputWord: str):
 
     definitions = {}
 
-    output = inputWord
+    output = inputWord + '\n\n'
 
     speechParts = [
         'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective', 
         'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition', 
-        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause'
+        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun',
+        'Participle', 'Phrase'
         ]
 
     if inputWord[0] in string.ascii_letters:
@@ -34,18 +35,29 @@ def generateOutput(inputWord: str):
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
             if speechPart not in definitions:
-                definitions[speechPart] = []
+                output += speechPart + '\n'
+
+            if currentTag.xpath('following-sibling::*[1]')[0].tag == 'p':  # class="Latn headword", lang="en"
+                underSpeechPart = currentTag.xpath('following-sibling::*[1]')[0].text_content()
+                output += underSpeechPart
 
             ols = currentTag.xpath('./following-sibling::ol[1]/li')
-            for ol in ols:
-                definitions[speechPart].append(ol.text_content().split('\n')[0])
 
-    for speechPart, spPtDefs in definitions.items():
-        output += f'\n{speechPart}\n'
-        # spPtDefs = filter(None, spPtDefs)
-        for i, definition in enumerate(spPtDefs):
-            if i < 5:  # max 5 definitions per speech part
-                output += f'{str(i + 1)}) {definition}\n'
+            # extract the text from the tag and all its children
+            for j, ol in enumerate(ols):
+                ols[j] = ol.text_content().split('\n')[0].strip()
+                # TODO: add definition //div[@class="h-usage-example"]
+
+            # remove empty entries
+            ols = list(filter(None, ols))
+
+            for j, ol in enumerate(ols):
+                if j < 5:
+                    output = f'{output}{j + 1}) {ol}\n'
+            output += '\n'
+
+    if output.replace('\n', '') == inputWord:
+        output = 'Word or phrase not found'
 
     return output
 
