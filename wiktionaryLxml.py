@@ -31,7 +31,7 @@ def generateOutput(inputWord: str):
             break
 
         # elif currentTagName in ['h3', 'h4']:
-        elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) != 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text in speechParts:
+        elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text in speechParts:
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
             if speechPart not in definitions:
@@ -41,19 +41,22 @@ def generateOutput(inputWord: str):
                 underSpeechPart = currentTag.xpath('following-sibling::*[1]')[0].text_content()
                 output += underSpeechPart
 
-            ols = currentTag.xpath('./following-sibling::ol[1]/li')
+            lis = currentTag.xpath('./following-sibling::ol[1]/li')
 
             # extract the text from the tag and all its children
-            for j, ol in enumerate(ols):
-                ols[j] = ol.text_content().split('\n')[0].strip()
-                # TODO: add definition //div[@class="h-usage-example"]
+            for j, li in enumerate(lis):
+                lis[j] = li.text_content().split('\n')[0].strip()
+                # usage example if exists
+                if len(li.xpath('.//*[@class = "h-usage-example"]')) > 0:
+                    for usageI in range(len(li.xpath('.//*[@class = "h-usage-example"]'))):
+                        lis[j] = lis[j] + '\n\t' + li.xpath('.//*[@class = "h-usage-example"]')[usageI].text_content()  # TODO: add a separator for the croner case мама
 
             # remove empty entries
-            ols = list(filter(None, ols))
+            lis = list(filter(None, lis))
 
-            for j, ol in enumerate(ols):
+            for j, li in enumerate(lis):
                 if j < 5:
-                    output = f'{output}{j + 1}) {ol}\n'
+                    output = f'{output}{j + 1}) {li}\n'
             output += '\n'
 
     if output.replace('\n', '') == inputWord:
