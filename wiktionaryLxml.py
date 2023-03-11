@@ -6,11 +6,11 @@ def generateOutput(inputWord: str):
 
     definitions = {}
 
-    output = inputWord + '\n\n\n'
+    output = ''
 
     speechParts = [
-        'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective', 
-        'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition', 
+        'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective',
+        'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition',
         'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun',
         'Participle', 'Phrase'
         ]
@@ -35,7 +35,7 @@ def generateOutput(inputWord: str):
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
             if speechPart not in definitions:
-                output += speechPart + '\n\n'
+                output = f'{output}{speechPart}\n\n'
 
             if currentTag.xpath('following-sibling::*[1]')[0].tag == 'p':  # class="Latn headword", lang="en"
                 underSpeechPart = currentTag.xpath('following-sibling::*[1]')[0].text_content()
@@ -58,11 +58,11 @@ def generateOutput(inputWord: str):
             for j, li in enumerate(lis):
                 if j < 5:
                     output = f'{output}{j + 1}) {li}\n\n'
-            output += '\n'
+            output = f'{output}\n'
 
     if output.replace('\n', '') == inputWord:
         output = 'Word or phrase not found'
 
     return output
 
-print(generateOutput('god'))
+print(generateOutput('God'))
