@@ -63,7 +63,7 @@ def generateOutput(inputWord: str):
 
             for j, li in enumerate(lis):
                 if j < 5:
-                    output = f'{output}{j + 1}) {li}\n'
+                    output = f'{output}{j + 1}) {li}\n\n'
             output = f'{output}\n'
 
     if output.replace('\n', '') == inputWord:
