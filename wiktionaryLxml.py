@@ -47,9 +47,10 @@ def generateOutput(inputWord: str):
             for j, li in enumerate(lis):
                 lis[j] = li.text_content().split('\n')[0].strip()
                 # usage example if exists
-                if len(li.xpath('.//*[@class = "h-usage-example"]')) > 0:
-                    for usageI in range(len(li.xpath('.//*[@class = "h-usage-example"]'))):
-                        lis[j] = lis[j] + '\n' + li.xpath('.//*[@class = "h-usage-example"]')[usageI].text_content()
+                if len(li.xpath('./dl/dd')) > 0:
+                    for usage in li.xpath('./dl/dd'):
+                        if usage.text_content().split()[0] not in ['Synonym:', 'Synonyms:']:
+                            lis[j] = lis[j] + '\n' + usage.text_content()
 
             # remove empty entries
             lis = list(filter(None, lis))
