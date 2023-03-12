@@ -62,7 +62,7 @@ def generateOutput(inputWord: str):
                 if j < 5:
                     output = f'{output}{j + 1}) {li}\n\n'
 
-    if output.replace('\n', '') == inputWord:
+    if output == '':
         output = 'Word or phrase not found'
 
     return output
