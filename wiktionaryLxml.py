@@ -68,7 +68,10 @@ def generateOutput(inputWord: str, speechPart: str):
                     output = f'{output}{j + 1}) {li}\n\n'
 
     if output == '':
-        output = 'Word or phrase not found'
+        if speechPart == 'All':
+            output = 'Word or phrase not found'
+        else:
+            output = 'The word does not fit into the specified part of speech'
 
     return output
 
