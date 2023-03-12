@@ -2,16 +2,20 @@ from lxml import html
 import requests
 import string
 
-def generateOutput(inputWord: str):
+def generateOutput(inputWord: str, speechPart: str):
 
     output = ''
+    speechPart = speechPart.capitalize()
 
-    speechParts = [
-        'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective',
-        'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition',
-        'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun',
-        'Participle', 'Phrase'
-        ]
+    if speechPart == 'All':
+        speechParts = [
+            'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective',
+            'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition',
+            'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun',
+            'Participle', 'Phrase'
+            ]
+    else:
+        speechParts = [speechPart]  # break after speechPart is found increases performance
 
     if inputWord[0] in string.ascii_letters:
         language = 'English'
@@ -68,4 +72,4 @@ def generateOutput(inputWord: str):
 
     return output
 
-print(generateOutput('God'))
+print(generateOutput('God', 'all'))
