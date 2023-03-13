@@ -17,6 +17,9 @@ def generateOutput(inputWord: str, speechPart: str):
     else:
         speechParts = [speechPart]  # break after speechPart is found increases performance
 
+    # Общая/IPA(key), (UK), (Received Pronunciation), (Received Pronunciation, General American), (General American), (General American, Canada), (General American, Ireland), (US)
+    allDialects = {'UK', 'Received Pronunciation', 'US', 'General American', 'weak vowel merger'}
+
     if inputWord[0] in string.ascii_letters:
         language = 'English'
     else:
@@ -32,7 +35,36 @@ def generateOutput(inputWord: str, speechPart: str):
         if currentTagName == 'h2':
             break
 
-        # elif currentTagName in ['h3', 'h4']:
+        # Pronunciation
+        elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text == 'Pronunciation':
+            tempPronunciations = currentTag.xpath(f'./following-sibling::ul[1]')[0].text_content().split('\n')
+            tempPronunciations = [pronunciation for pronunciation in tempPronunciations if 'IPA(key):' in pronunciation]
+            pronunciations = []
+            for i, pronunciation in enumerate(tempPronunciations):
+                dialectStart = pronunciation.find("(") + 1
+                dialectEnd = pronunciation.find(")")
+                dialect = set(pronunciation[dialectStart:dialectEnd].split(','))
+
+                if 'key' in dialect:
+                    pronunciations.append(pronunciation[pronunciation.find('IPA(key):') + 10:])
+
+                elif len(dialect.intersection(allDialects)) > 0:
+
+                    # end of pronunciation
+                    if pronunciation.rfind('/') > pronunciation.rfind(']'):
+                        pronunciationStart = pronunciation.find('/')
+                        pronunciationEnd = pronunciation.rfind('/')
+                    else:
+                        pronunciationStart = pronunciation.find('[')
+                        pronunciationEnd = pronunciation.rfind(']')
+
+                    pronunciations.append(pronunciation[dialectStart - 1 : dialectEnd + 1] + ' ' + pronunciation[pronunciationStart : pronunciationEnd + 1])
+
+            output = f'{output}**Pronunciation**\n\n'
+            for pronunciation in pronunciations:
+                output = f'{output}{pronunciation}\n\n'
+
+        # Speech parts
         elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text in speechParts:
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
