@@ -144,9 +144,14 @@ def generateOutput(inputWord: str, speechPart: str):
         for key, value in list(output.items()):
             if not value or value[-3] in ['/', ']']:  # TODO: value[-3] is unreliable, better make a list
                 del output[key]
+        if len(output) == 0:  # TODO: redo this part
+            if speechPart == 'All':
+                output = 'Word or phrase not found'  # TODO: remove the dynamic typization
+            else:
+                output = 'The word does not fit into the specified part of speech'
 
     return output
 
-for key, value in generateOutput('bow', 'all').items():
+for key, value in generateOutput('bow', 'Numeral').items():
     print(key)
     print(value)
