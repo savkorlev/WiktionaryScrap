@@ -95,3 +95,7 @@ def generateOutput(inputWord: str):
     return output
 
 print(generateOutput('God'))
+
+
+test = {'Etymology1': '**Pronunciation**'}
+print(test['Etymology1'])

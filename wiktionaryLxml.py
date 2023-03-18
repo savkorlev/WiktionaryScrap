@@ -4,7 +4,7 @@ import string
 
 def generateOutput(inputWord: str, speechPart: str):
 
-    output = ''
+    output = {}
     speechPart = speechPart.capitalize()
 
     if speechPart == 'All':
@@ -17,7 +17,7 @@ def generateOutput(inputWord: str, speechPart: str):
     else:
         speechParts = [speechPart]  # break after speechPart is found increases performance
 
-    # Общая/IPA(key), (UK), (Received Pronunciation), (Received Pronunciation, General American), (General American), (General American, Canada), (General American, Ireland), (US)
+    # IPA(key), (UK), (Received Pronunciation), (Received Pronunciation, General American), (General American), (General American, Canada), (General American, Ireland), (US)
     allDialects = {'UK', 'Received Pronunciation', 'US', 'General American', 'weak vowel merger'}
 
     if inputWord[0] in string.ascii_letters:
@@ -34,6 +34,41 @@ def generateOutput(inputWord: str, speechPart: str):
 
         if currentTagName == 'h2':
             break
+
+        # TODO: Pronunciation before etymology aka same pronunciation for all etymologies
+        # # Pronunciation
+        # elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text == 'Pronunciation':
+        #     tempPronunciations = currentTag.xpath(f'./following-sibling::ul[1]')[0].text_content().split('\n')
+        #     tempPronunciations = [pronunciation for pronunciation in tempPronunciations if 'IPA(key):' in pronunciation]
+        #     pronunciations = []
+        #     for i, pronunciation in enumerate(tempPronunciations):
+        #         dialectStart = pronunciation.find("(") + 1
+        #         dialectEnd = pronunciation.find(")")
+        #         dialect = set(pronunciation[dialectStart:dialectEnd].split(','))
+
+        #         if 'key' in dialect:
+        #             pronunciations.append(pronunciation[pronunciation.find('IPA(key):') + 10:])
+
+        #         elif len(dialect.intersection(allDialects)) > 0:
+
+        #             # end of pronunciation
+        #             if pronunciation.rfind('/') > pronunciation.rfind(']'):
+        #                 pronunciationStart = pronunciation.find('/')
+        #                 pronunciationEnd = pronunciation.rfind('/')
+        #             else:
+        #                 pronunciationStart = pronunciation.find('[')
+        #                 pronunciationEnd = pronunciation.rfind(']')
+
+        #             pronunciations.append(pronunciation[dialectStart - 1 : dialectEnd + 1] + ' ' + pronunciation[pronunciationStart : pronunciationEnd + 1])
+
+            # output = f'{output}**Pronunciation**\n\n'
+            # for pronunciation in pronunciations:
+            #     output = f'{output}{pronunciation}\n\n'
+
+        # Etymology
+        elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text.split()[0] == 'Etymology':
+            currentEtymology = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
+            output[currentEtymology] = ''
 
         # Pronunciation
         elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text == 'Pronunciation':
@@ -59,20 +94,20 @@ def generateOutput(inputWord: str, speechPart: str):
                         pronunciationEnd = pronunciation.rfind(']')
 
                     pronunciations.append(pronunciation[dialectStart - 1 : dialectEnd + 1] + ' ' + pronunciation[pronunciationStart : pronunciationEnd + 1])
-
-            output = f'{output}**Pronunciation**\n\n'
+            
+            output[currentEtymology] = f'{output[currentEtymology]}**Pronunciation**\n\n'
             for pronunciation in pronunciations:
-                output = f'{output}{pronunciation}\n\n'
+                output[currentEtymology] = f'{output[currentEtymology]}{pronunciation}\n\n'
 
         # Speech parts
         elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text in speechParts:
 
             speechPart = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
-            output = f'{output}**{speechPart}**\n\n'
+            output[currentEtymology] = f'{output[currentEtymology]}**{speechPart}**\n\n'
 
             if currentTag.xpath('following-sibling::*[1]')[0].tag == 'p':  # class="Latn headword", lang="en"
                 underSpeechPart = currentTag.xpath('following-sibling::*[1]')[0].text_content()
-                output = f'{output}{underSpeechPart}\n'
+                output[currentEtymology] = f'{output[currentEtymology]}{underSpeechPart}\n'
 
             lis = currentTag.xpath('./following-sibling::ol[1]/li')
 
@@ -97,9 +132,9 @@ def generateOutput(inputWord: str, speechPart: str):
 
             for j, li in enumerate(lis):
                 if j < 5:
-                    output = f'{output}{j + 1}) {li}\n\n'
+                    output[currentEtymology] = f'{output[currentEtymology]}{j + 1}) {li}\n\n'
 
-    if output == '':
+    if len(output) == 0:
         if speechPart == 'All':
             output = 'Word or phrase not found'
         else:
@@ -107,4 +142,7 @@ def generateOutput(inputWord: str, speechPart: str):
 
     return output
 
-print(generateOutput('God', 'all'))
+qwerty = generateOutput('bow', 'all')
+for key, value in qwerty.items():
+    print(key)
+    print(value)
