@@ -142,7 +142,7 @@ def generateOutput(inputWord: str, speechPart: str):
 
     else:
         for key, value in list(output.items()):
-            if not value:
+            if not value or value[-3] in ['/', ']']:  # TODO: value[-3] is unreliable, better make a list
                 del output[key]
 
     return output
