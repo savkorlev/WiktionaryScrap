@@ -140,13 +140,13 @@ def generateOutput(inputWord: str, speechPart: str):
         else:
             output = 'The word does not fit into the specified part of speech'
 
-    for key, value in list(output.items()):
-        if not value:
-            del output[key]
+    else:
+        for key, value in list(output.items()):
+            if not value:
+                del output[key]
 
     return output
 
-qwerty = generateOutput('bow', 'all')
-for key, value in qwerty.items():
+for key, value in generateOutput('bow', 'all').items():
     print(key)
     print(value)
