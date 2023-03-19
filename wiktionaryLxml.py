@@ -38,7 +38,7 @@ def addSpeechParts(tag):
     speechPartStr = f'**{speechPart}**\n\n'
 
     if tag.xpath('following-sibling::*[1]')[0].tag == 'p':  # class="Latn headword", lang="en"
-        underSpeechPart = tag.xpath('following-sibling::*[1]')[0].text_content()
+        underSpeechPart = tag.xpath('following-sibling::*[1]')[0].text_content().replace('*', '')
         speechPartStr += f'{underSpeechPart}\n'
 
     lis = tag.xpath('./following-sibling::ol[1]/li')
