@@ -57,7 +57,7 @@ def addSpeechParts(tag):
         elif len(li.xpath('./ol/li/dl/dd')) > 0:
             if li.xpath('./ol/li/dl/dd')[0].text_content().split()[0] not in ['Synonym:', 'Synonyms:', 'Antonym:', 'Antonyms:']:
                 usage = li.xpath('./ol/li/dl/dd')[0].text_content()
-                lis[j] += f'\n*{usage}*'
+                lis[j] += f'\n• *{usage}*'
 
     # remove empty entries
     lis = list(filter(None, lis))
@@ -170,6 +170,6 @@ def generateOutput(inputWord: str, speechPart: str):
 
     return output
 
-for key, value in generateOutput('god', 'all').items():
+for key, value in generateOutput('hit', 'all').items():
     print(key)
     print(value)
