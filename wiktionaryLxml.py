@@ -171,7 +171,7 @@ def generateOutput(inputWord: str, speechPart: str) -> str:
     if inputWord == 'Комарово':
         with open('komarovo.txt', 'r', encoding='utf-8') as file:
             komarovo = file.read()
-        output = komarovo
+        output = {'Etymology': komarovo}
 
     elif len(output) == 0:
         if speechPart == 'All':
@@ -192,7 +192,6 @@ def generateOutput(inputWord: str, speechPart: str) -> str:
     return output
 
 if __name__ == '__main__':
-    print(generateOutput('Комарово', 'all'))
     for key, value in generateOutput('Комарово', 'all').items():
         print(key)
         print(value)
