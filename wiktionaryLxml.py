@@ -1,9 +1,35 @@
 from lxml import html
 import requests
 import string
+from typing import List
 
 
-def addPronunciation(tag: str, pronunciations: list, dialects: list):
+
+def determineLogic(tree: str, language: str) -> List[bool]:
+    isEtymFound = False
+    isPronunFound = False
+    isPronunBeforeEtym = False
+
+    for i in range(1, len(tree.xpath(f'//h2[span[@id="{language}"]]/following-sibling::*'))):
+        currentTag = tree.xpath(f'//h2[span[@id="{language}"]]/following-sibling::*[{i}]')[0]  # why list
+        currentTagName = currentTag.tag
+
+        # terminate if another language has been reached
+        if currentTagName == 'h2' or (isEtymFound and isPronunFound):
+            break
+
+        # check what comes first etymology or pronuciation:
+        if len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text.split()[0] == 'Etymology':
+            isEtymFound = True
+            if isPronunFound:
+                isPronunBeforeEtym = True
+        elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text == 'Pronunciation':
+            isPronunFound = True
+
+    return [isEtymFound, isPronunFound, isPronunBeforeEtym]
+
+
+def addPronunciation(tag: str, pronunciations: list, dialects: list) -> str:
     tempPronunciations = tag.xpath(f'./following-sibling::ul[1]')[0].text_content().split('\n')
     tempPronunciations = [pronunciation for pronunciation in tempPronunciations if 'IPA(key):' in pronunciation]
     for pronunciation in tempPronunciations:
@@ -33,7 +59,7 @@ def addPronunciation(tag: str, pronunciations: list, dialects: list):
     return etymStr
 
 
-def addSpeechParts(tag):
+def addSpeechParts(tag) -> str:
     speechPart = tag.xpath(f'./span[@class="mw-headline"]')[0].text
     speechPartStr = f'**{speechPart}**\n\n'
 
@@ -69,27 +95,24 @@ def addSpeechParts(tag):
     return speechPartStr
 
 
-def generateOutput(inputWord: str, speechPart: str):
+def generateOutput(inputWord: str, speechPart: str) -> str:
 
     output = {}
     speechPart = speechPart.capitalize()
     pronunciations = []
-    isPronunBeforeEtym = False
-    isPronunFound = False
-    isEtymFound = False
 
     if speechPart == 'All':
         speechParts = [
             'Article', 'Determiner', 'Numeral', 'Noun', 'Pronoun', 'Verb', 'Adjective',
             'Adverb', 'Preposition', 'Postposition', 'Circumposition', 'Ambiposition',
             'Conjunction', 'Interjection', 'Exclamation', 'Particle', 'Clause', 'Proper noun',
-            'Participle', 'Phrase'
+            'Participle', 'Phrase', 'Letter'
             ]
     else:
         speechParts = [speechPart]  # break after speechPart is found increases performance
 
     # IPA(key), (UK), (Received Pronunciation), (Received Pronunciation, General American), (General American), (General American, Canada), (General American, Ireland), (US)
-    allDialects = {'UK', 'Received Pronunciation', 'US', 'General American', 'weak vowel merger'}
+    allDialects = {'UK', 'Received Pronunciation', 'US', 'General American', 'weak vowel merger', 'phoneme', 'letter name'}
 
     if inputWord[0] in string.ascii_letters:
         language = 'English'
@@ -99,20 +122,10 @@ def generateOutput(inputWord: str, speechPart: str):
     url = requests.get(f'https://en.wiktionary.org/wiki/{inputWord}')
     tree = html.fromstring(url.content)
 
-    for i in range(1, len(tree.xpath(f'//h2[span[@id="{language}"]]/following-sibling::*'))):
-        currentTag = tree.xpath(f'//h2[span[@id="{language}"]]/following-sibling::*[{i}]')[0]  # why list
-        currentTagName = currentTag.tag
-
-        # check what comes first etymology or pronuciation:
-        if len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text.split()[0] == 'Etymology':
-            isEtymFound = True
-            if isPronunFound:
-                isPronunBeforeEtym = True
-                break
-        elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text == 'Pronunciation':
-            isPronunFound = True
-            if isEtymFound:
-                break
+    isPronunBeforeEtym = determineLogic(tree, language)
+    if isPronunBeforeEtym[0] == False:
+        currentEtymology = 'Etymology'
+        output[currentEtymology] = ''
 
     for i in range(1, len(tree.xpath(f'//h2[span[@id="{language}"]]/following-sibling::*'))):
         currentTag = tree.xpath(f'//h2[span[@id="{language}"]]/following-sibling::*[{i}]')[0]  # why list
@@ -123,7 +136,7 @@ def generateOutput(inputWord: str, speechPart: str):
             break
         
         # if etymology comes before pronoun
-        if not isPronunBeforeEtym:
+        elif not isPronunBeforeEtym[2]:
             # Etymology
             if len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text.split()[0] == 'Etymology':
                 currentEtymology = currentTag.xpath(f'./span[@class="mw-headline"]')[0].text
@@ -138,7 +151,7 @@ def generateOutput(inputWord: str, speechPart: str):
                 output[currentEtymology] += addSpeechParts(currentTag)
 
         # if pronoun comes before etymology
-        else:
+        elif isPronunBeforeEtym[2]:
             # Pronunciation
             if len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text == 'Pronunciation':
                 pronuncations = addPronunciation(currentTag, pronunciations, allDialects)
@@ -170,6 +183,6 @@ def generateOutput(inputWord: str, speechPart: str):
 
     return output
 
-for key, value in generateOutput('hit', 'all').items():
+for key, value in generateOutput('god', 'all').items():
     print(key)
     print(value)
