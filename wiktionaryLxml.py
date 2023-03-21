@@ -97,6 +97,7 @@ def addSpeechParts(tag) -> str:
 
 def generateOutput(inputWord: str, speechPart: str) -> str:
 
+    # PREPROCESSING THE INPUTS
     output = {}
     speechPart = speechPart.capitalize()
     pronunciations = []
@@ -119,6 +120,7 @@ def generateOutput(inputWord: str, speechPart: str) -> str:
     else:
         language = 'Russian'
 
+    # START OF THE SCRIPT
     url = requests.get(f'https://en.wiktionary.org/wiki/{inputWord}')
     tree = html.fromstring(url.content)
 
@@ -165,7 +167,13 @@ def generateOutput(inputWord: str, speechPart: str) -> str:
             elif len(currentTag.xpath(f'./span[@class="mw-headline"]')) > 0 and currentTag.xpath(f'./span[@class="mw-headline"]')[0].text in speechParts:
                 output[currentEtymology] += addSpeechParts(currentTag)
 
-    if len(output) == 0:
+    # FINAL CLEANING
+    if inputWord == 'Комарово':
+        with open('komarovo.txt', 'r', encoding='utf-8') as file:
+            komarovo = file.read()
+        output = komarovo
+
+    elif len(output) == 0:
         if speechPart == 'All':
             output = 'Word or phrase not found'
         else:
@@ -183,6 +191,8 @@ def generateOutput(inputWord: str, speechPart: str) -> str:
 
     return output
 
-for key, value in generateOutput('god', 'all').items():
-    print(key)
-    print(value)
+if __name__ == '__main__':
+    print(generateOutput('Комарово', 'all'))
+    for key, value in generateOutput('Комарово', 'all').items():
+        print(key)
+        print(value)
